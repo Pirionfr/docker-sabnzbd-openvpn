@@ -3,7 +3,7 @@ LABEL maintainer="Pirion"
 
 VOLUME /config
 VOLUME /downloads
-VOLUME /incomplere-downloads
+VOLUME /incomplete-downloads
 
 # Install openvpn and utilities
 ARG DEBIAN_FRONTEND=noninteractive
