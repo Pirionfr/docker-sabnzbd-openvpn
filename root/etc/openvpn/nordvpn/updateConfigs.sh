@@ -47,7 +47,7 @@ log "Checking line endings"
 dos2unix * $1 >/dev/null 2>&1
 
 # Update configs with correct options
-log "Updating configs for docker-transmission-openvpn"
+log "Updating configs for docker-sabnzbd-openvpn"
 sed -i 's=auth-user-pass=auth-user-pass /config/openvpn-credentials.txt=g' *.ovpn
 sed -i 's/ping 15/inactive 3600\
 ping 10/g' *.ovpn

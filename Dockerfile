@@ -1,13 +1,14 @@
-FROM linuxserver/deluge:ed2b9165-ls6
-LABEL maintainer="Matthew Crenshaw"
+FROM linuxserver/sabnzbd:latest
+LABEL maintainer="Pirion"
 
 VOLUME /config
 VOLUME /downloads
+VOLUME /incomplere-downloads
 
 # Install openvpn and utilities
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
-    && apt-get install -y wget git curl jq sudo ufw iputils-ping openvpn bc \
+    && apt-get install -y wget git curl jq sudo iputils-ping openvpn bc \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

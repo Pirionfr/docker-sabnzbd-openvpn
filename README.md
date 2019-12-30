@@ -1,11 +1,11 @@
-# OpenVPN and Deluge with WebUI
+# OpenVPN and Sabnzbd with WebUI
 
-[![Docker Automated build](https://img.shields.io/docker/automated/sgtsquiggs/deluge-openvpn.svg)](https://hub.docker.com/r/sgtsquiggs/deluge-openvpn/)
-[![Docker Pulls](https://img.shields.io/docker/pulls/sgtsquiggs/deluge-openvpn.svg)](https://hub.docker.com/r/sgtsquiggs/deluge-openvpn/)
+[![Docker Automated build](https://img.shields.io/docker/automated/pirion/sabnzbd-openvpn.svg)](https://hub.docker.com/r/pirion/sabnzbd-openvpn/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/sgtsquiggs/sabnzbd-openvpn.svg)](https://hub.docker.com/r/pirion/sabnzbd-openvpn/)
 
 
-This container contains OpenVPN and Deluge with a configuration
-where Deluge is running only when OpenVPN has an active tunnel.
+This container contains OpenVPN and Sabnzbd with a configuration
+where Sabnzbd is running only when OpenVPN has an active tunnel.
 It bundles configuration files for many popular VPN providers to make the setup easier.
 
 You need to specify your provider and credentials with environment variables,
@@ -19,8 +19,9 @@ To run the container use this command:
 ```
 $ docker run --cap-add=NET_ADMIN --device=/dev/net/tun -d \
               --restart unless-stopped \
-              -v </path/to/deluge/config>:/config \
+              -v </path/to/sabnzbd/config>:/config \
               -v </path/to/your/downloads>:/downloads \
+              -v </path/to/your/incomplete-downloads>:/incomplete-downloads \
               -v /etc/localtime:/etc/localtime:ro \
               -e PUID=1001 \
               -e PGID=1001 \
@@ -32,7 +33,7 @@ $ docker run --cap-add=NET_ADMIN --device=/dev/net/tun -d \
               -e OPENVPN_PASSWORD=pass \
               -e LOCAL_NETWORK=192.168.0.0/16 \
               -p 8112:8112 \
-              sgtsquiggs/deluge-openvpn
+              pirion/sabnzbd-openvpn
 ```
 
 You must set the environment variables `OPENVPN_PROVIDER`, `OPENVPN_USERNAME` and `OPENVPN_PASSWORD` to provide basic connection details.
@@ -54,8 +55,8 @@ If you provide a list and the selected server goes down, after the value of ping
 To make sure this work in all cases, you should add ```--pull-filter ignore ping``` to your OPENVPN_OPTS variable.
 
 As you can see, the container also expects a data volume to be mounted.
-This is where Transmission will store your downloads, incomplete downloads and look for a watch directory for new .torrent files.
-By default a folder named transmission-home will also be created under /data, this is where Transmission stores its state.
+This is where sabnzbd will store your downloads, incomplete downloads and look for a watch directory for new .torrent files.
+By default a folder named sabnzbd-home will also be created under /data, this is where sabnzbd stores its state.
 
 ### Supported providers
 This is a list of providers that are bundled within the image. Feel free to create an issue if your provider is not on the list, but keep in mind that some providers generate config files per user. This means that your login credentials are part of the config an can therefore not be bundled. In this case you can use the custom provider setup described later in this readme. The custom provider setting can be used with any provider.
@@ -126,7 +127,7 @@ This is a list of providers that are bundled within the image. Feel free to crea
 ### Firewall configuration options
 When enabled, the firewall blocks everything except traffic to the peer port and traffic to the rpc port from the LOCAL_NETWORK and the internal docker gateway.
 
-If TRANSMISSION_PEER_PORT_RANDOM_ON_START is enabled then it allows traffic to the range of peer ports defined by TRANSMISSION_PEER_PORT_RANDOM_HIGH and TRANSMISSION_PEER_PORT_RANDOM_LOW.
+If SABNZBD_PEER_PORT_RANDOM_ON_START is enabled then it allows traffic to the range of peer ports defined by SABNZBD_PEER_PORT_RANDOM_HIGH and SABNZBD_PEER_PORT_RANDOM_LOW.
 
 | Variable | Function | Example |
 |----------|----------|-------|
@@ -136,13 +137,13 @@ If TRANSMISSION_PEER_PORT_RANDOM_ON_START is enabled then it allows traffic to t
 |`UFW_DISABLE_IPTABLES_REJECT` | Prevents the use of `REJECT` in the `iptables` rules, for hosts without the `ipt_REJECT` module (such as the Synology NAS). | `UFW_DISABLE_IPTABLES_REJECT=true`|
 
 ### User configuration options
-By default everything will run as the root user. However, it is possible to change who runs the Deluge process.
-You may set the following parameters to customize the user id that runs Deluge.
+By default everything will run as the root user. However, it is possible to change who runs the Sabnzbd process.
+You may set the following parameters to customize the user id that runs Sabnzbd.
 
 | Variable | Function | Example |
 |----------|----------|-------|
-|`PUID` | Sets the user id who will run Deluge | `PUID=1003`|
-|`PGID` | Sets the group id for the Deluge user | `PGID=1003` |
+|`PUID` | Sets the user id who will run Sabnzbd | `PUID=1003`|
+|`PGID` | Sets the group id for the Sabnzbd user | `PGID=1003` |
 
 ### Dropping default route from iptables (advanced)
 Some VPNs do not override the default route, but rather set other routes with a lower metric.
@@ -154,7 +155,7 @@ To drop the default route set the environment variable `DROP_DEFAULT_ROUTE` to `
 
 #### Use docker env file
 Another way is to use a docker env file where you can easily store all your env variables and maintain multiple configurations for different providers.
-In the GitHub repository there is a provided DockerEnv file with all the current transmission and openvpn environment variables. You can use this to create local configurations
+In the GitHub repository there is a provided DockerEnv file with all the current sabnzbd and openvpn environment variables. You can use this to create local configurations
 by filling in the details and removing the # of the ones you want to use.
 
 Please note that if you pass in env. variables on the command line these will override the ones in the env file.
@@ -167,7 +168,7 @@ $ docker run --cap-add=NET_ADMIN --device=/dev/net/tun -d \
               -v /etc/localtime:/etc/localtime:ro \
               --env-file /your/docker/env/file \
               -p 9091:9091 \
-              haugene/transmission-openvpn
+              pirion/sabnzbd-openvpn
 ```
 
 ## Access the WebUI

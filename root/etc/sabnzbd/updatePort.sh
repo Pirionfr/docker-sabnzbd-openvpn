@@ -8,7 +8,7 @@ log() {
 log "Wait for tunnel to be fully initialized and PIA is ready to give us a port"
 sleep 15
 
-pia_client_id_file=/etc/deluge/pia_client_id
+pia_client_id_file=/etc/sabnzbd/pia_client_id
 
 #
 # First get a port from PIA
@@ -55,24 +55,21 @@ fi
 log "Got new port $new_port from PIA"
 
 #
-# Now, set port in Deluge
+# Now, set port in Sabnsbd
 #
 
 # get current listening port
-deluge_peer_port=$(deluge-console -c /config "config listen_ports" | grep listen_ports | grep -oE '[0-9]+' | head -1)
-if [ "$new_port" != "$deluge_peer_port" ]; then
+sabnzbd_peer_port=$(cat /config/sabnzbd.ini | grep port | grep -oE '[0-9]+' | head -1)
+if [ "$new_port" != "sabnzbd_peer_port" ]; then
   if [ "true" = "$ENABLE_UFW" ]; then
-    log "Update UFW rules before changing port in Deluge"
+    log "Update UFW rules before changing port in Sabnsbd"
 
-    log "Denying access to $deluge_peer_port"
-    ufw deny "$deluge_peer_port"
+    log "Denying access to sabnzbd_peer_port"
+    ufw deny "sabnzbd_peer_port"
 
     log "Allowing $new_port through the firewall"
     ufw allow "$new_port"
   fi
-
-  deluge-console -c /config "config --set listen_ports ($new_port,$new_port)"
-  deluge-console -c /config "config --set random_port false"
 else
     log "No action needed, port hasn't changed"
 fi

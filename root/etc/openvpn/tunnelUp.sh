@@ -15,33 +15,24 @@ if [ "$4" = "" ]; then
   exit 1
 fi
 
-# If deluge-pre-start.sh exists, run it
-if [ -x /config/deluge-pre-start.sh ]
+# If sabnzbd-pre-start.sh exists, run it
+if [ -x /config/sabnzbd-pre-start.sh ]
 then
-  log "Executing /config/deluge-pre-start.sh"
-  /config/deluge-pre-start.sh "$@"
-  log "/config/deluge-pre-start.sh returned $?"
+  log "Executing /config/sabnzbd-pre-start.sh"
+  /config/sabnzbd-pre-start.sh "$@"
+  log "/config/sabnzbd-pre-start.sh returned $?"
 fi
 
 log "Using ip of interface $1: $4"
-export DELUGE_BIND_ADDRESS_IPV4=$4
-
-if [ -e /config/core.conf ]
-then
-  log "Updating Deluge conf file: listen_interface=$DELUGE_BIND_ADDRESS_IPV4"
-  sed -i -e "s/\"listen_interface\": \".*\"/\"listen_interface\": \"$DELUGE_BIND_ADDRESS_IPV4\"/" /config/core.conf
-fi
+export SABNZBD_BIND_ADDRESS_IPV4=$4
 
 if [ "true" = "$DROP_DEFAULT_ROUTE" ]; then
   log "Dropping default route"
   ip r del default || exit 1
 fi
 
-log "Starting Deluge"
-s6-svc -u /var/run/s6/services/deluged
-
-log "Setting Deluge listen_interface"
-deluge-console -c /config "config --set listen_interface '$DELUGE_BIND_ADDRESS_IPV4'"
+log "Starting Sabzbd"
+s6-svc -u /var/run/s6/services/sabnzbd --config-file /config --server SABNZBD_BIND_ADDRESS_IPV4:8080
 
 ## If we use UFW or the LOCAL_NETWORK we need to grab network config info
 if [[ "${ENABLE_UFW,,}" == "true" ]] || [[ -n "${LOCAL_NETWORK-}" ]]; then
@@ -85,9 +76,6 @@ if [[ "${ENABLE_UFW,,}" == "true" ]]; then
   sed -i -e s/IPV6=yes/IPV6=no/ /etc/default/ufw
   ufw enable
 
-  PEER_PORT=$(jq -cr '.["listen_ports"]' ./config/deluge/core.conf | grep -v null | head -1 | tr -d "[]" | tr "," ":")
-  DAEMON_PORT=$(jq -cr '.["daemon_port"]' ./config/deluge/core.conf | grep -v null | head -1)
-
   ufwAllowPort PEER_PORT
 
   if [[ "${WEBPROXY_ENABLED,,}" == "true" ]]; then
@@ -130,21 +118,21 @@ fi
 if [ "$OPENVPN_PROVIDER" = "PIA" ]
 then
   log "Configuring port forwarding"
-  exec /etc/deluge/updatePort.sh &
+  exec /etc/sabnzbd/updatePort.sh &
 elif [ "$OPENVPN_PROVIDER" = "PERFECTPRIVACY" ]
 then
   log "Configuring port forwarding"
-  exec /etc/deluge/updatePPPort.sh ${DELUGE_BIND_ADDRESS_IPV4} &
+  exec /etc/sabnzbd/updatePPPort.sh ${SABNZBD_BIND_ADDRESS_IPV4} &
 else
   log "No port updated for this provider!"
 fi
 
-# If deluge-post-start.sh exists, run it
-if [ -x /config/deluge-post-start.sh ]
+# If sabnzbd-post-start.sh exists, run it
+if [ -x /config/sabnzbd-post-start.sh ]
 then
-  log "Executing /config/deluge-post-start.sh"
-  /config/deluge-post-start.sh "$@"
-  log "/config/deluge-post-start.sh returned $?"
+  log "Executing /config/sabnzbd-post-start.sh"
+  /config/sabnzbd-post-start.sh "$@"
+  log "/config/sabnzbd-post-start.sh returned $?"
 fi
 
-log "Deluge startup script complete."
+log "Sabnzbd startup script complete."
