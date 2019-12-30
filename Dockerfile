@@ -27,4 +27,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -L -f https://api.ipify.org || exit 1
 
 # Expose port and run
-EXPOSE 8112 58846 58946 58946/udp
+EXPOSE 8080 9090
